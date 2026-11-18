@@ -1,0 +1,13 @@
+{
+  "name": "HistGradientBoosting_tuned",
+  "params": {
+    "learning_rate": 0.17855789220062088,
+    "max_leaf_nodes": 18,
+    "min_samples_leaf": 26,
+    "l2_regularization": 0.06160715952774549,
+    "max_iter": 232
+  },
+  "selection_rule": "tuned model kept if its 3-fold group-CV candidate macro F1 on training trips exceeds the untuned model's",
+  "untuned_cv_macro_f1": 0.744204257666572,
+  "tuned_cv_macro_f1": 0.7498681877096166
+}

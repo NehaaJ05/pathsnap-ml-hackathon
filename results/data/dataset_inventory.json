@@ -1,0 +1,28 @@
+{
+  "train": {
+    "trips": 80,
+    "observations": 208417,
+    "candidate_rows": 2084170,
+    "arcs_total_per_trip_median": 19526.5,
+    "nodes_per_trip_median": 9608.0,
+    "route_arcs_median": 280.0,
+    "candidate_miss_rate_pct": 7.259004783678875,
+    "dt_eq_1s_pct": 96.50031604345742,
+    "gaps_gt_30s": 133,
+    "max_gap_s": 153064.0,
+    "build_seconds": 22.3
+  },
+  "student_test": {
+    "trips": 10,
+    "observations": 19160,
+    "candidate_rows": 191600,
+    "arcs_total_per_trip_median": 13145.0,
+    "nodes_per_trip_median": 6596.5,
+    "route_arcs_median": 250.0,
+    "candidate_miss_rate_pct": 0.2035490605427975,
+    "dt_eq_1s_pct": 98.62118944121373,
+    "gaps_gt_30s": 2,
+    "max_gap_s": 210.0,
+    "build_seconds": 1.7
+  }
+}

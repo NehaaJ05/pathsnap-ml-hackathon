@@ -1,0 +1,4 @@
+{
+  "selected": "HistGradientBoosting",
+  "rule": "highest mean 5-fold CV candidate macro F1 on the 80 training trips"
+}

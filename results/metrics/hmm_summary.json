@@ -1,0 +1,41 @@
+{
+  "decoder_config": {
+    "beta": 5.0,
+    "unreachable_penalty": 20.0,
+    "gap_s": 30.0,
+    "max_speed": 40.0,
+    "reach_factor": 3.0,
+    "reach_margin": 300.0,
+    "eps": 1e-09
+  },
+  "tuning_trips": [
+    "00000001",
+    "00000008",
+    "00000016",
+    "00000024",
+    "00000031",
+    "00000037",
+    "00000044",
+    "00000051",
+    "00000060",
+    "00000068",
+    "00000075",
+    "00000083",
+    "00000090",
+    "00000098"
+  ],
+  "student_test_mean": {
+    "clf_pointwise_top1": 0.5872713211088791,
+    "clf_route_continuity": 0.9119203002231775,
+    "clf_chain_breaks": 0.0,
+    "clf_seq_precision": 0.5471126668556334,
+    "clf_seq_recall": 0.7748611727024141,
+    "clf_seq_f1": 0.6341549107136762,
+    "hmm_pointwise_top1": 0.908202682067912,
+    "hmm_route_continuity": 0.9781192678986678,
+    "hmm_chain_breaks": 0.2,
+    "hmm_seq_precision": 0.9342024680954649,
+    "hmm_seq_recall": 0.8967828122451967,
+    "hmm_seq_f1": 0.9131034704509698
+  }
+}

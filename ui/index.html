@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PathSnap evaluator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root { --ink:#172033; --muted:#64748b; --panel:#fff; --canvas:#f1f5f9; --blue:#2563eb; --gps:#2563eb; --actual:#15803d; --predicted:#dc2626; }
+  * { box-sizing: border-box; }
+  body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; margin: 0; color: var(--ink); background: var(--canvas); }
+  header { padding: 16px 24px; background: linear-gradient(115deg, #111827, #1e3a5f); color: #fff; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+  header strong { font-size:20px; letter-spacing:-.02em; } header small { display:block; color:#cbd5e1; margin-top:2px; }
+  .header-tag { padding:5px 9px; border:1px solid #64748b; border-radius:999px; color:#dbeafe; font-size:12px; white-space:nowrap; }
+  main { display:grid; grid-template-columns:340px minmax(0,1fr); gap:18px; padding:18px; max-width:1600px; margin:auto; }
+  .panel, .map-panel { background:var(--panel); border:1px solid #dbe3ef; border-radius:12px; box-shadow:0 2px 10px rgb(15 23 42 / .06); }
+  .panel { padding:18px; } .section-title { font-size:14px; font-weight:750; margin:0 0 10px; }
+  .hint { color:var(--muted); font-size:12px; line-height:1.45; margin:5px 0 0; }
+  label { display:block; font-size:13px; font-weight:650; margin-top:15px; }
+  input, select, button { font:inherit; font-size:14px; padding:9px 10px; margin-top:6px; width:100%; }
+  input, select { border:1px solid #cbd5e1; border-radius:7px; color:var(--ink); background:#fff; }
+  input:focus, select:focus { outline:3px solid rgb(37 99 235 / .16); border-color:var(--blue); }
+  button { background:var(--blue); color:#fff; border:0; border-radius:7px; cursor:pointer; margin-top:15px; font-weight:700; box-shadow:0 1px 2px rgb(15 23 42 / .16); }
+  button:hover:not(:disabled) { background:#1d4ed8; } button:disabled { background:#94a3b8; cursor:not-allowed; }
+  .divider { border:0; border-top:1px solid #e2e8f0; margin:18px 0; }
+  #status { font-size:13px; color:#334155; margin-top:12px; min-height:20px; line-height:1.45; } .err { color:#b91c1c !important; }
+  .layer-option { display:flex; align-items:flex-start; gap:9px; border:1px solid #e2e8f0; padding:9px; border-radius:8px; margin-top:8px; cursor:pointer; }
+  .layer-option:hover { background:#f8fafc; } .layer-option input { width:auto; margin:3px 0 0; accent-color:var(--blue); }
+  .layer-option b { display:block; font-size:13px; } .layer-option span { display:block; font-size:11px; color:var(--muted); margin-top:2px; }
+  .line-key { width:28px; border-top:4px solid; margin-top:7px; flex:none; } .line-key.gps { border-color:var(--gps); border-top-style:dashed; } .line-key.actual { border-color:var(--actual); } .line-key.predicted { border-color:var(--predicted); border-top-style:dashed; }
+  .map-panel { padding:12px; min-width:0; } .map-heading { display:flex; justify-content:space-between; gap:12px; padding:2px 4px 12px; align-items:baseline; } .map-heading h2 { margin:0; font-size:16px; } .map-heading span { color:var(--muted); font-size:12px; }
+  #map { height:620px; border:1px solid #d1d5db; border-radius:8px; overflow:hidden; }
+  .metrics-label { margin:18px 0 8px; font-size:14px; font-weight:750; }
+  table { border-collapse:separate; border-spacing:0; width:100%; font-size:12px; overflow:hidden; border:1px solid #e2e8f0; border-radius:8px; }
+  td, th { border-bottom:1px solid #e5e7eb; padding:8px 6px; text-align:right; } td:first-child, th:first-child { text-align:left; } th { background:#f8fafc; font-size:11px; } tr:last-child td { border-bottom:0; }
+  .map-legend { background:#fff; padding:10px 12px; border-radius:8px; line-height:1.7; box-shadow:0 2px 10px rgb(15 23 42 / .25); font-size:12px; }
+  .map-legend .line-key { display:inline-block; margin:0 6px 3px 0; vertical-align:middle; }
+  .endpoint { width:14px; height:14px; display:inline-block; border:2px solid #fff; border-radius:50%; margin-right:7px; vertical-align:-2px; box-shadow:0 0 0 1px #475569; } .endpoint.start { background:#0f766e; } .endpoint.end { background:#7c3aed; }
+  @media (max-width:850px) { main { grid-template-columns:1fr; padding:12px; } header { padding:14px; } #map { height:500px; } }
+</style>
+</head>
+<body>
+<header><div><strong>PathSnap</strong><small>GPS-to-road route comparison</small></div><div class="header-tag">Route evaluator</div></header>
+<main>
+  <section class="panel">
+    <h2 class="section-title">1. Connect to the API</h2>
+    <label>API base URL
+      <input id="api" value="http://localhost:8000">
+    </label>
+    <p class="hint">On a second system, replace <code>localhost</code> with the API computer's local IP address.</p>
+    <button id="load">Load evaluation trips</button>
+    <hr class="divider">
+    <h2 class="section-title">2. Compare a trip</h2>
+    <label>Evaluation trip
+      <select id="trip" disabled></select>
+    </label>
+    <button id="run" disabled>Run prediction</button>
+    <div id="status"></div>
+    <div id="metrics"></div>
+    <hr class="divider">
+    <h2 class="section-title">Map layers</h2>
+    <label class="layer-option"><input id="show-gps" type="checkbox" checked><i class="line-key gps"></i><div><b>Original GPS trace</b><span>Raw, noisy location measurements</span></div></label>
+    <label class="layer-option"><input id="show-actual" type="checkbox" checked><i class="line-key actual"></i><div><b>Actual reference route</b><span>Labelled road path (solid green)</span></div></label>
+    <label class="layer-option"><input id="show-predicted" type="checkbox" checked><i class="line-key predicted"></i><div><b>Predicted route</b><span>Model output (dashed red)</span></div></label>
+  </section>
+  <section class="map-panel">
+    <div class="map-heading"><h2>Route map</h2><span>Use layer controls to isolate each path</span></div>
+    <div id="map"></div>
+  </section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const map = L.map("map").setView([55.8, 37.4], 13);
+L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "&copy; OpenStreetMap" }).addTo(map);
+const gpsLayer = L.layerGroup().addTo(map);
+const actualLayer = L.layerGroup().addTo(map);
+const predictedLayer = L.layerGroup().addTo(map);
+const legend = L.control({ position: "bottomright" });
+legend.onAdd = () => {
+  const div = L.DomUtil.create("div", "map-legend");
+  div.innerHTML = `<div><i class="line-key gps"></i>Original GPS trace</div>` +
+                  `<div><i class="line-key actual"></i>Actual reference route</div>` +
+                  `<div><i class="line-key predicted"></i>Predicted route</div>` +
+                  `<div><i class="endpoint start"></i>Start &nbsp; <i class="endpoint end"></i>End</div>`;
+  return div;
+};
+legend.addTo(map);
+
+function status(msg, isErr = false) {
+  $("status").textContent = msg;
+  $("status").className = isErr ? "err" : "";
+}
+
+function toggleMapLayer(id, mapLayer) {
+  $(id).onchange = (event) => event.target.checked ? map.addLayer(mapLayer) : map.removeLayer(mapLayer);
+}
+toggleMapLayer("show-gps", gpsLayer);
+toggleMapLayer("show-actual", actualLayer);
+toggleMapLayer("show-predicted", predictedLayer);
+
+$("load").onclick = async () => {
+  status("Loading trips...");
+  try {
+    const r = await fetch($("api").value.replace(/\/$/, "") + "/trips");
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const data = await r.json();
+    const sel = $("trip");
+    sel.innerHTML = "";
+    data.trips.forEach((id) => { const o = document.createElement("option"); o.value = id; o.textContent = id; sel.appendChild(o); });
+    sel.disabled = false; $("run").disabled = false;
+    status(data.trips.length + " trips available");
+  } catch (e) { status("Could not load trips: " + e.message, true); }
+};
+
+function row(name, m) {
+  return `<tr><td>${name}</td><td>${(100 * m.observation_top1).toFixed(2)}%</td>` +
+         `<td>${(100 * m.route_precision).toFixed(1)}%</td><td>${(100 * m.route_recall).toFixed(1)}%</td>` +
+         `<td>${(100 * m.route_f1).toFixed(1)}%</td></tr>`;
+}
+
+$("run").onclick = async () => {
+  const tripId = $("trip").value;
+  $("run").disabled = true;
+  status("Running prediction for " + tripId + " ...");
+  try {
+    const r = await fetch($("api").value.replace(/\/$/, "") + "/predict", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trip_id: tripId }),
+    });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    $("metrics").innerHTML =
+      `<div class="metrics-label">Prediction quality</div><table><tr><th>Method</th><th>Observation top-1</th><th>Route precision</th><th>Route recall</th><th>Route F1</th></tr>` +
+      row("Classifier only", d.classifier_only) + row("Classifier + HMM", d.classifier_plus_hmm) +
+      `</table><p class="hint">${d.observations.toLocaleString()} GPS observations &middot; ${d.chain_breaks} HMM chain breaks &middot; ${d.elapsed_seconds}s server time</p>`;
+    gpsLayer.clearLayers(); actualLayer.clearLayers(); predictedLayer.clearLayers();
+    const bounds = [];
+    // Original GPS measurements: useful for seeing the noisy input to map matching.
+    const gps = d.gps_trace_lonlat.map(([lon, lat]) => [lat, lon]);
+    if (gps.length) {
+      L.polyline(gps, { color: "#2563eb", weight: 3, opacity: 0.9, dashArray: "3 8" }).addTo(gpsLayer);
+      const step = Math.max(1, Math.ceil(gps.length / 80));
+      gps.filter((_, index) => index % step === 0).forEach((point) =>
+        L.circleMarker(point, { radius: 2, color: "#2563eb", weight: 1, fillOpacity: 0.75 }).addTo(gpsLayer));
+      L.circleMarker(gps[0], { radius: 7, color: "#fff", weight: 2, fillColor: "#0f766e", fillOpacity: 1 }).bindTooltip("GPS start").addTo(gpsLayer);
+      L.circleMarker(gps[gps.length - 1], { radius: 7, color: "#fff", weight: 2, fillColor: "#7c3aed", fillOpacity: 1 }).bindTooltip("GPS end").addTo(gpsLayer);
+      bounds.push(...gps);
+    }
+    // Green is the labelled/actual route; red is the HMM-decoded prediction.
+    d.actual_segments_lonlat.forEach((seg) => {
+      const ll = seg.map(([lon, lat]) => [lat, lon]);
+      L.polyline(ll, { color: "#15803d", weight: 7, opacity: 0.72 }).addTo(actualLayer);
+      bounds.push(...ll);
+    });
+    d.predicted_segments_lonlat.forEach((seg) => {
+      const ll = seg.map(([lon, lat]) => [lat, lon]);
+      L.polyline(ll, { color: "#dc2626", weight: 4, opacity: 1, dashArray: "9 7" }).addTo(predictedLayer);
+      bounds.push(...ll);
+    });
+    if (bounds.length) map.fitBounds(bounds, { padding: [20, 20] });
+    status("Done. Blue dots/dashes are GPS; solid green is actual; dashed red is predicted.");
+  } catch (e) { status("Prediction failed: " + e.message, true); }
+  finally { $("run").disabled = false; }
+};
+</script>
+</body>
+</html>

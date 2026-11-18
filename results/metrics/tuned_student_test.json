@@ -1,0 +1,9 @@
+{
+  "model": "HistGradientBoosting (tuned)",
+  "student_test_top1": 0.5706680584551148,
+  "student_test_macro_f1": 0.7654129002793499,
+  "student_test_logloss": 0.14240227657451554,
+  "student_test_continuity": 0.9306527415143603,
+  "fit_seconds_full": 6.709472417831421,
+  "infer_seconds_per_1k_obs": 0.035013738095368806
+}

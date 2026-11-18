@@ -1,0 +1,7 @@
+Model,Family,CV Macro F1,Top-1 (CV),Route continuity (test),Test Top-1,Test Macro F1,Test Log Loss,Inference (s / 1k obs)
+HistGradientBoosting,Boosting,0.7464 ± 0.0251,51.76%,93.04,57.44%,0.7563,0.1433,0.0482
+RandomForest,Ensemble (bagging),0.7326 ± 0.0240,51.84%,93.08,56.79%,0.7400,0.1403,0.0568
+MLP,Neural network,0.7260 ± 0.0359,51.43%,93.02,56.43%,0.7399,0.1455,0.1492
+GaussianNB,Probabilistic,0.6999 ± 0.0222,48.51%,92.80,53.94%,0.6994,0.6489,0.0082
+DecisionTree,Tree,0.6825 ± 0.0857,51.46%,93.00,57.35%,0.7707,0.1431,0.0028
+LogisticRegression,Linear,0.6641 ± 0.0301,51.06%,92.79,56.56%,0.6954,0.1673,0.0038
