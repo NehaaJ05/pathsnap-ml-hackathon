@@ -1,0 +1,57 @@
+{
+  "schema_version": "member1-v1",
+  "processed_trips": 90,
+  "inventory_trips": 90,
+  "full_dataset_run": true,
+  "dataset_sha256": "e0cac7c31dadbecfd52f9f519682989864be58c7b0377839de73e054ef7f7ff8",
+  "candidate_config": {
+    "radius_m": 50.0,
+    "max_candidates": 8,
+    "fallback_nearest": true
+  },
+  "python": "3.15.2",
+  "packages": {
+    "numpy": "2.5.5",
+    "pandas": "3.1.1",
+    "scipy": "1.18.1",
+    "pyproj": "3.8.0",
+    "shapely": "2.2.0",
+    "folium": "1.0.0",
+    "matplotlib": "3.11.2"
+  },
+  "elapsed_s": 188.97766409999167,
+  "partition_totals": {
+    "student_test": {
+      "raw_observations": 19160,
+      "clean_observations": 19160,
+      "rejected_observations": 0,
+      "candidate_rows": 113648,
+      "fallback_observations": 0,
+      "usable_proxy_labels": 14472,
+      "training_eligible_observations": 14457,
+      "candidate_misses": 15,
+      "far_reference_observations": 27,
+      "ambiguous_observations": 4660,
+      "speed_outliers": 1,
+      "zero_length_arcs": 6,
+      "epsg": 326355,
+      "elapsed_s": 13.342117599982885
+    },
+    "train": {
+      "raw_observations": 208417,
+      "clean_observations": 208417,
+      "rejected_observations": 0,
+      "candidate_rows": 1124837,
+      "fallback_observations": 18230,
+      "usable_proxy_labels": 145069,
+      "training_eligible_observations": 144343,
+      "candidate_misses": 726,
+      "far_reference_observations": 23343,
+      "ambiguous_observations": 39856,
+      "speed_outliers": 150,
+      "zero_length_arcs": 100,
+      "epsg": 2610954,
+      "elapsed_s": 159.77366990000883
+    }
+  }
+}
