@@ -57,7 +57,11 @@ def main():
     train = pd.read_pickle(os.path.join(CACHE, "train.pkl"))
     test = pd.read_pickle(os.path.join(CACHE, "student_test.pkl"))
     oof = np.load(os.path.join(CACHE, f"oof_{cfg_name}.npy"))
-    test_p = np.load(os.path.join(CACHE, f"test_{cfg_name}.npy"))
+    # Score student-test candidates with the deployed model (the same one the API uses),
+    # not with cached probabilities, so the report and the API cannot disagree.
+    import joblib
+    final = joblib.load(os.path.join(ROOT, "models", "final_model.joblib"))
+    test_p = final.predict_proba(test[FEATURES].to_numpy(dtype=np.float64))[:, 1]
     train = train.assign(oof=oof)
     test = test.assign(p=test_p)
 
